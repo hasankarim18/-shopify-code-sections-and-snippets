@@ -1,0 +1,140 @@
+<style>
+    .custom_p2_filter {
+
+    }
+    .product_container{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      list-style:none;
+      gap:20px;
+    }
+
+
+    .product_container li{
+      border:1px solid black;
+      border-radius:10px;
+    }
+
+  select {
+     -webkit-appearance:none;
+     -moz-appearance:none;
+     -ms-appearance:none;
+     appearance:none;
+     outline:0;
+     box-shadow:none;
+     border:0!important;
+     background: #5c6664;
+     background-image: none;
+     flex: 1;
+     padding: 0 .5em;
+     color:#fff;
+     cursor:pointer;
+     font-size: 1em;
+     font-family: 'Open Sans', sans-serif;
+  }
+  select::-ms-expand {
+     display: none;
+  }
+  .select {
+     position: relative;
+     display: flex;
+     width: 20em;
+     height: 3em;
+     line-height: 3;
+     background: #5c6664;
+     overflow: hidden;
+     border-radius: .25em;
+  }
+  .select::after {
+     content: '\25BC';
+     position: absolute;
+     top: 0;
+     right: 0;
+     padding: 0 1em;
+     background: #2b2e2e;
+     cursor:pointer;
+     pointer-events:none;
+     transition:.25s all ease;
+  }
+  .select:hover::after {
+     color: #23b499;
+  }
+</style>
+
+<div class="page-width">
+  <hr>
+  <div class="section-title">
+    <h1>{{ collection.title }}</h1>
+  </div>
+  <!-- collection.products = array for loop -->
+  <!-- product sorting -->
+  <div>
+    <select id="custom-product-grid-srot-by" class="select">
+      {% assign sort_by = collection.sort_by | default: collection.default_sort_by %}
+      {% for option in collection.sort_options %}
+        <option
+          value="{{ option.value }}"
+          {% if sort_by == option.value %}
+            selected="selected"
+          {% endif %}
+        >
+          {{ option.name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+  {% paginate collection.products by 3 %}
+    <div>
+      <div class="custom_p2_filter"></div>
+      <ul class="product_container">
+        {% for product in collection.products %}
+          <li>
+            <p>{{ product.title }}</p>
+            <p>{{ product.price | money_with_currency }}</p>
+          </li>
+        {% endfor %}
+      </ul>
+      {{ paginate | default_pagination }}
+    </div>
+  {% endpaginate %}
+</div>
+
+<script>
+  Shopify.queryParams = {};
+
+  // Preserve existing query parameters
+  if (location.search.length) {
+    var params = location.search.substr(1).split('&');
+
+    for (var i = 0; i < params.length; i++) {
+      var keyValue = params[i].split('=');
+
+      if (keyValue.length) {
+        Shopify.queryParams[decodeURIComponent(keyValue[0])] = decodeURIComponent(keyValue[1]);
+      }
+    }
+  }
+
+  // Update sort_by query parameter on select change
+  document.querySelector('#custom-product-grid-srot-by').addEventListener('change', function(e) {
+    var value = e.target.value;
+
+    Shopify.queryParams.sort_by = value;
+    location.search = new URLSearchParams(Shopify.queryParams).toString();
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Custom Product Grid2",
+  "settings": [],
+  "presets": [
+    {
+      "name": "custom product grid2"
+    }
+  ],
+  "enabled_on": {
+    "templates": ["collection"]
+  }
+}
+{% endschema %}
